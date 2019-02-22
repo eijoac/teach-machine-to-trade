@@ -1,3 +1,7 @@
+We use shuaiw's original code as our project starting point.
+
+Jacky & Jay
+
 # Teach Machine to Trade
 
 This repo has code for the post: [Teach Machine to Trade](https://shuaiw.github.io/2018/02/11/teach-machine-to-trade.html)
