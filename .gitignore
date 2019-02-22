@@ -3,5 +3,6 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+__pycache__/
 portfolio_val/
 weights/
