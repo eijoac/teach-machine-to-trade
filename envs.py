@@ -21,8 +21,12 @@ class TradingEnv(gym.Env):
     - if buying multiple stock, equally distribute cash in hand and then utilize the balance
   """
   def __init__(self, train_data, init_invest=20000):
+    
     # data
-    self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
+
+    # jay: no round up
+    # self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
+    self.stock_price_history = train_data
     self.n_stock, self.n_step = self.stock_price_history.shape
 
     # instance attributes
@@ -37,10 +41,26 @@ class TradingEnv(gym.Env):
 
     # observation space: give estimates in order to sample and build scaler
     stock_max_price = self.stock_price_history.max(axis=1)
-    stock_range = [[0, init_invest * 2 // mx] for mx in stock_max_price]
-    price_range = [[0, mx] for mx in stock_max_price]
-    cash_in_hand_range = [[0, init_invest * 2]]
-    self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
+
+    # jay: modify to use Box (continuous) for observation space.
+    # jay: in the old code observation_space is only used to assign state_size
+    # jay: i keep this part to make it consistent with the old code; otherwise observation_space is not necessary
+    
+    # stock_range = [[0, init_invest * 2 // mx] for mx in stock_max_price]
+    # price_range = [[0, mx] for mx in stock_max_price]
+    # cash_in_hand_range = [[0, init_invest * 2]]
+    # self.observation_space = spaces.MultiDiscrete(stock_range + price_range + cash_in_hand_range)
+
+    stock_range_max = [init_invest * 2 // mx for mx in stock_max_price]
+    price_range_max = [mx for mx in stock_max_price]
+    cash_in_hand_range_max = [init_invest * 2]
+    observation_space_max = stock_range_max + price_range_max + cash_in_hand_range_max
+    self.observation_space = spaces.Box(np.zeros(len(observation_space_max)), np.array(observation_space_max))
+    
+    # jay: for debug
+    # print(price_range)
+    # print(self.observation_space.shape)
+    
 
     # seed and start
     self._seed()
@@ -87,7 +107,7 @@ class TradingEnv(gym.Env):
 
   def _trade(self, action):
     # all combo to sell(0), hold(1), or buy(2) stocks
-    action_combo = map(list, itertools.product([0, 1, 2], repeat=self.n_stock))
+    action_combo = list(map(list, itertools.product([0, 1, 2], repeat=self.n_stock)))
     action_vec = action_combo[action]
 
     # one pass to get sell/buy index

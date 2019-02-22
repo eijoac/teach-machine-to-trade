@@ -28,12 +28,19 @@ if __name__ == '__main__':
 
   timestamp = time.strftime('%Y%m%d%H%M')
 
-  data = np.around(get_data())
+  # jay: no round up
+  # data = np.around(get_data())
+  data = get_data()
   train_data = data[:, :3526]
   test_data = data[:, 3526:]
 
   env = TradingEnv(train_data, args.initial_invest)
-  state_size = env.observation_space.shape
+  
+  # jay: add for debug
+  # print(env.observation_space.shape)
+  
+  # the only place observation_space is used
+  state_size = env.observation_space.shape[0]
   action_size = env.action_space.n
   agent = DQNAgent(state_size, action_size)
   scaler = get_scaler(env)
@@ -49,11 +56,11 @@ if __name__ == '__main__':
     timestamp = re.findall(r'\d{12}', args.weights)[0]
 
   for e in range(args.episode):
-    state = env.reset()
+    state = env._reset()
     state = scaler.transform([state])
     for time in range(env.n_step):
       action = agent.act(state)
-      next_state, reward, done, info = env.step(action)
+      next_state, reward, done, info = env._step(action)
       next_state = scaler.transform([next_state])
       if args.mode == 'train':
         agent.remember(state, action, reward, next_state, done)
@@ -71,3 +78,5 @@ if __name__ == '__main__':
   # save portfolio value history to disk
   with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
     pickle.dump(portfolio_value, fp)
+    
+    
