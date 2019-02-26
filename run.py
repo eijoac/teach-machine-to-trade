@@ -55,6 +55,9 @@ if __name__ == '__main__':
     # when test, the timestamp is same as time when weights was trained
     timestamp = re.findall(r'\d{12}', args.weights)[0]
 
+    # jay: no exploration in the test mode
+    agent.epsilon = -1
+
   for e in range(args.episode):
     state = env._reset()
     state = scaler.transform([state])
