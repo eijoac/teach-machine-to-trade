@@ -5,14 +5,16 @@ from sklearn.preprocessing import StandardScaler
 
 
 def get_data(col='close'):
-  """ Returns a 3 x n_step array """
-  msft = pd.read_csv('data/daily_MSFT.csv', usecols=[col])
-  ibm = pd.read_csv('data/daily_IBM.csv', usecols=[col])
-  qcom = pd.read_csv('data/daily_QCOM.csv', usecols=[col])
-  # recent price are at top; reverse it
-  return np.array([msft[col].values[::-1],
-                   ibm[col].values[::-1],
-                   qcom[col].values[::-1]])
+  """ Returns a 2 x n_step array """
+  sp = pd.read_csv('data/daily_SPXTR.csv', usecols=[col])
+  rf = pd.read_csv('data/daily_RF.csv', usecols=[col])
+
+  # get lag for S&P
+  sp_daily_return = (sp - sp.shift()) / sp
+
+  # remove the first row, and return a numpy array
+  return np.array([sp_daily_return[col].values[1:],
+                   rf[col].values[1:]])
 
 
 def get_scaler(env):
