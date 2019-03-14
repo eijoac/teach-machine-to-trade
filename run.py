@@ -12,7 +12,7 @@ from utils import get_data, get_scaler, maybe_make_dir
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--episode', type=int, default=500,
-                        help='number of episode to run')
+                        help='number of episode to run; in test mode episode will be 1 regardless this value')
     parser.add_argument('-b', '--batch_size', type=int, default=32,
                         help='batch size for experience replay')
     parser.add_argument('-i', '--initial_sp_share', type=float, default=0.5,
@@ -62,6 +62,12 @@ if __name__ == '__main__':
 
     portfolio_value = []
 
+    # for record test mode daily portfolio value for plotting
+    test_portfolio_value_daily = []
+    test_state_daily = []
+
+    episode = args.episode
+
     if args.mode == 'test':
         # remake the env with test data
         env = TradingEnv(test_data, args.initial_sp_share)
@@ -70,10 +76,13 @@ if __name__ == '__main__':
         # when test, the timestamp is same as time when weights was trained
         timestamp = re.findall(r'\d{12}', args.weights)[0]
 
-        # jay: no exploration in the test mode
+        # jay: no exploration in test mode
         agent.epsilon = -1
 
-    for e in range(args.episode):
+        # run 1 episode in test mode
+        episode = 1
+
+    for e in range(episode):
         state = env._reset()
         state = scaler.transform([state])
         for time in range(env.n_step):
@@ -82,6 +91,12 @@ if __name__ == '__main__':
             next_state = scaler.transform([next_state])
             if args.mode == 'train':
                 agent.remember(state, action, reward, next_state, done)
+            state = next_state
+            # record test mode daily state and portfolio value for plotting
+            if args.mode == 'test':
+                test_portfolio_value_daily.append(info['cur_val'])
+                # print(scaler.inverse_transform(state)[0])
+                test_state_daily.append(scaler.inverse_transform(state)[0])
             state = next_state
             if done:
                 print("episode: {}/{}, episode end value: {}".format(
@@ -97,3 +112,9 @@ if __name__ == '__main__':
     # save portfolio value history to disk
     with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
         pickle.dump(portfolio_value, fp)
+
+    if args.mode == 'test':
+        with open('portfolio_val/{}-{}-value-daily.p'.format(timestamp, args.mode), 'wb') as fp:
+            pickle.dump(test_portfolio_value_daily, fp)
+        with open('portfolio_val/{}-{}-state-daily.p'.format(timestamp, args.mode), 'wb') as fp:
+            pickle.dump(test_state_daily, fp)
