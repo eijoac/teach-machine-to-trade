@@ -1,8 +1,8 @@
 import gym
 from gym import spaces
 from gym.utils import seeding
-import numpy as np
-import itertools
+# import numpy as np
+# import itertools
 import math
 
 
@@ -116,11 +116,9 @@ class TradingEnv(gym.Env):
     def _trade(self, action):
         # update S&P share based on action (at the end of a day)
         if action == 0:
-            sp_share_tp = (self.sp_share - 0.1) * \
-                (1 + self.sp) if self.sp_share > 0.1 else 0
+            sp_share_tp = (self.sp_share - 0.1) if self.sp_share > 0.1 else 0
         elif action == 2:
-            sp_share_tp = (self.sp_share + 0.1) * \
-                (1 + self.rf) if self.sp_share < 0.9 else 1
+            sp_share_tp = (self.sp_share + 0.1) if self.sp_share < 0.9 else 1
         else:
             sp_share_tp = self.sp_share
 

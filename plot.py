@@ -4,8 +4,20 @@ import matplotlib.pyplot as plt
 
 from utils import get_data
 
-init_sp_share = 0.5
+
 init_total_portfolio_value = 10000
+
+# timestamp = "201903151000"
+# init_sp_share = 0
+
+# timestamp = "201903141815"
+# init_sp_share = 0.5
+
+# timestamp = "201903151145"
+# init_sp_share = 1
+
+timestamp = "201903151318"
+init_sp_share = 1
 
 data = get_data()
 
@@ -27,16 +39,16 @@ buy_hold_value_ts_all_sp = init_total_portfolio_value * cum_return_test_ts[0, ]
 buy_hold_value_ts_all_tbill = init_total_portfolio_value * cum_return_test_ts[1, ]
 buy_hold_value_ts = init_total_portfolio_value * (init_sp_share * cum_return_test_ts[0, ] + (1 - init_sp_share) * cum_return_test_ts[1, ])
 
-with open('./portfolio_val/201903141122-train.p', 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-train.p", 'rb') as f:
     val_train = pickle.load(f)
 
-with open('./portfolio_val/201903141122-test.p', 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-test.p", 'rb') as f:
     val_test = pickle.load(f)
 
-with open('./portfolio_val/201903141122-test-value-daily.p', 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-test-value-daily.p", 'rb') as f:
     val_test_daily = pickle.load(f)
 
-with open('./portfolio_val/201903141122-test-state-daily.p', 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-test-state-daily.p", 'rb') as f:
     state_test_daily = pickle.load(f)
 
 print("train-test split index: ", train_split_idx)

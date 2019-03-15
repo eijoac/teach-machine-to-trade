@@ -2,6 +2,21 @@ We use shuaiw's original code as our project starting point.
 
 Jacky & Jay
 
+How to use? See one example below.
+
+train:
+python run.py --mode train --initial_sp_share 1 --episode 1000
+
+test: say the generated weights file is 201903151145-dqn.h5
+python run.py --mode test --initial_sp_share 1 --weights weights/201903151145-dqn.h5
+
+plot: for now, mannually change the following to variables accordingly
+timestamp = "201903151145"
+init_sp_share = 1
+
+then
+python plot.py
+
 # Teach Machine to Trade
 
 This repo has code for the post: [Teach Machine to Trade](https://shuaiw.github.io/2018/02/11/teach-machine-to-trade.html)

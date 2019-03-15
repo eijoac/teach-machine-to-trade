@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--batch_size', type=int, default=32,
                         help='batch size for experience replay')
     parser.add_argument('-i', '--initial_sp_share', type=float, default=0.5,
-                        help='initial fraction of S&P500 in total portfolio')
+                        help='initial fraction of S&P500 in total portfolio (0 to 1)')
     parser.add_argument('-m', '--mode', type=str, required=True,
                         help='either "train" or "test"')
     parser.add_argument('-w', '--weights', type=str,
