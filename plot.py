@@ -16,8 +16,11 @@ init_total_portfolio_value = 10000
 # timestamp = "201903151145"
 # init_sp_share = 1
 
-timestamp = "201903151318"
-init_sp_share = 1
+# timestamp = "201903151318"
+# init_sp_share = 1
+
+timestamp = "201903201751"
+init_sp_share = 0.5
 
 data = get_data()
 
