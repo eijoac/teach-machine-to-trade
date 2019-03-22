@@ -27,9 +27,10 @@ def get_scaler(env):
     random_sp_share = np.random.rand(1, step)
 
     sp_rf_ts = env.sp_rf_ts
+    sp_rf_ts_stack = np.repeat(sp_rf_ts, [env.lag+1, env.lag+1], axis=0)
 
     data = np.concatenate(
-        (random_portfolio_value, random_sp_share, sp_rf_ts), axis=0)
+        (random_portfolio_value, random_sp_share, sp_rf_ts_stack), axis=0)
 
     scaler = StandardScaler()
     scaler.fit(np.transpose(data))
@@ -62,9 +63,10 @@ def get_scaler_minmax(env):
     random_sp_share = np.random.rand(1, step)
 
     sp_rf_ts = env.sp_rf_ts
+    sp_rf_ts_stack = np.repeat(sp_rf_ts, [env.lag+1, env.lag+1], axis=0)
 
     data = np.concatenate(
-        (random_portfolio_value, random_sp_share, sp_rf_ts), axis=0)
+        (random_portfolio_value, random_sp_share, sp_rf_ts_stack), axis=0)
 
     scaler = MinMaxScaler()
     scaler.fit(np.transpose(data))

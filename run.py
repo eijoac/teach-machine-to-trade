@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # the only place observation_space is used
     # state_size = env.observation_space.shape[0]
     # hard code for now
-    state_size = 4
+    state_size = 4 + env.lag * 2
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size)
     scaler = get_scaler(env)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     for e in range(episode):
         state = env._reset()
         state = scaler.transform([state])
-        for time in range(env.n_step):
+        for time in range(env.n_step - env.lag):
             action = agent.act(state)
             next_state, reward, done, info = env._step(action)
             next_state = scaler.transform([next_state])

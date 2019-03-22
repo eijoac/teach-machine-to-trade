@@ -7,6 +7,7 @@ from utils import get_data
 
 init_total_portfolio_value = 10000
 
+
 # timestamp = "201903151000"
 # init_sp_share = 0
 
@@ -19,8 +20,16 @@ init_total_portfolio_value = 10000
 # timestamp = "201903151318"
 # init_sp_share = 1
 
-timestamp = "201903201751"
+# timestamp = "201903201751"
+# init_sp_share = 0.5
+
+# timestamp = "201903220925"
+# init_sp_share = 0.5
+# lag = 0
+
+timestamp = "201903221549"
 init_sp_share = 0.5
+lag = 7
 
 data = get_data()
 
@@ -31,13 +40,13 @@ train_split_idx = int(data.shape[1] * train_fraction)
 train_data = data[:, :train_split_idx]
 test_data = data[:, train_split_idx:]
 
-buy_hold_return_train = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + train_data[:, 1:], axis=1))
-buy_hold_return_test = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + test_data[:, 1:], axis=1))
+buy_hold_return_train = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + train_data[:, (1 + lag):], axis=1))
+buy_hold_return_test = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + test_data[:, (1 + lag):], axis=1))
 
 buy_hold_value_train = init_total_portfolio_value * buy_hold_return_train
 buy_hold_value_test = init_total_portfolio_value * buy_hold_return_test
 
-cum_return_test_ts = np.cumprod(1 + test_data[:, 1:], axis=1)
+cum_return_test_ts = np.cumprod(1 + test_data[:, (1 + lag):], axis=1)
 buy_hold_value_ts_all_sp = init_total_portfolio_value * cum_return_test_ts[0, ]
 buy_hold_value_ts_all_tbill = init_total_portfolio_value * cum_return_test_ts[1, ]
 buy_hold_value_ts = init_total_portfolio_value * (init_sp_share * cum_return_test_ts[0, ] + (1 - init_sp_share) * cum_return_test_ts[1, ])

@@ -7,7 +7,7 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
-def mlp(n_obs, n_action, n_hidden_layer=3, n_neuron_per_layer=32,
+def mlp(n_obs, n_action, n_hidden_layer=2, n_neuron_per_layer=32,
         activation='relu', loss='mse'):
     """ A multi-layer perceptron """
     model = Sequential()

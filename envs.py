@@ -23,10 +23,12 @@ class TradingEnv(gym.Env):
         # self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
         self.sp_rf_ts = train_data
 
+        self.lag = 7
+
         # jay: keep the self.n_stock for now
         self.n_stock, self.n_step = self.sp_rf_ts.shape
         self.n_stock = self.n_stock - 1
-
+        
         # instance attributes
         # self.init_invest = init_invest
         self.init_total_portfolio_value = 10000
@@ -39,6 +41,9 @@ class TradingEnv(gym.Env):
         self.sp_share = None
         self.sp = None
         self.rf = None
+
+        self.sp_lag = None
+        self.rf_lag = None
 
         # action space
         self.action_space = spaces.Discrete(3)
@@ -74,7 +79,7 @@ class TradingEnv(gym.Env):
         return [seed]
 
     def _reset(self):
-        self.cur_step = 0
+        self.cur_step = self.lag
         # self.stock_owned = [0] * self.n_stock
         # self.stock_price = self.stock_price_history[:, self.cur_step]
         # self.cash_in_hand = self.init_invest
@@ -82,6 +87,8 @@ class TradingEnv(gym.Env):
         self.sp_share = self.init_sp_share
         self.sp = self.sp_rf_ts[0, self.cur_step]
         self.rf = self.sp_rf_ts[1, self.cur_step]
+        self.sp_lag = self.sp_rf_ts[0, self.cur_step - self.lag : self.cur_step]
+        self.rf_lag = self.sp_rf_ts[1, self.cur_step - self.lag : self.cur_step]
         return self._get_obs()
 
     def _step(self, action):
@@ -91,6 +98,8 @@ class TradingEnv(gym.Env):
         # self.stock_price = self.stock_price_history[:, self.cur_step] # update price
         self.sp = self.sp_rf_ts[0, self.cur_step]
         self.rf = self.sp_rf_ts[1, self.cur_step]
+        self.sp_lag = self.sp_rf_ts[0, self.cur_step - self.lag : self.cur_step]
+        self.rf_lag = self.sp_rf_ts[1, self.cur_step - self.lag : self.cur_step]
         self._trade(action)
         cur_val = self._get_val()
         reward = math.log(cur_val) - math.log(prev_val)
@@ -106,7 +115,9 @@ class TradingEnv(gym.Env):
         obs.append(self.total_portfolio_value)
         obs.append(self.sp_share)
         obs.append(self.sp)
+        obs.extend(self.sp_lag)
         obs.append(self.rf)
+        obs.extend(self.rf_lag)
         return obs
 
     def _get_val(self):
