@@ -27,9 +27,76 @@ init_total_portfolio_value = 10000
 # init_sp_share = 0.5
 # lag = 0
 
-timestamp = "201903221549"
-init_sp_share = 0.5
-lag = 7
+# timestamp = "201903221549"
+# init_sp_share = 0.5
+# lag = 7
+
+# timestamp = "201903221756"
+# init_sp_share = 0.5
+# lag = 7
+
+# timestamp = "201903221804"
+# init_sp_share = 0
+# lag = 7
+
+# timestamp = "201903261237"
+# init_sp_share = 0
+# lag = 7
+
+# timestamp = "201903281330"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 50
+# timestamp = "201903281606"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 100; episode = 5000; final epsilon = 0.1
+# timestamp = "201903281749"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 100; episode = 5000; final epsilon = 0.1
+# timestamp = "201903281751"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 100; episode = 5000; final epsilon = 0.1; reward value difference (not log)
+# timestamp = "201903290949"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 100; episode = 20000; final epsilon = 0.1; reward -1, 0, 1
+# timestamp = "201903291424"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 400; episode = 20000; final epsilon = 0.1; reward log
+# timestamp = "201903291722"
+# init_sp_share = 0
+# lag = 30
+
+# test2: trick 2 implemented; update_feq = 50; episode = 5000; final epsilon = 0.1; reward log; learning rate = 0.00025; Hidden NN 32 nodes & 2 layers
+# timestamp = "201904011723"
+# init_sp_share = 0
+# lag = 30
+
+
+# test3: trick 2 implemented; update_feq = 50; episode = 5000; final epsilon = 0.1; reward log; learning rate = 0.001; Hidden NN 100 nodes & 2 layers
+# timestamp = "201904011733"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_feq = 50; episode = 5000; final epsilon = 0.1; reward log; learning rate = 0.00025; Hidden NN 100 nodes & 2 layers
+# timestamp = "201904011734"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_freq = 50; episode = 2000; final epsilon = 0.1; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers
+timestamp = "201904021024"
+init_sp_share = 0
+lag = 30
 
 data = get_data()
 
@@ -42,6 +109,12 @@ test_data = data[:, train_split_idx:]
 
 buy_hold_return_train = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + train_data[:, (1 + lag):], axis=1))
 buy_hold_return_test = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + test_data[:, (1 + lag):], axis=1))
+
+buy_hold_all_sp_return_train = np.sum([1, 0] * np.product(1 + train_data[:, (1 + lag):], axis=1))
+buy_hold_all_tbill_return_train = np.sum([0, 1] * np.product(1 + train_data[:, (1 + lag):], axis=1))
+
+buy_hold_all_sp_value_train = init_total_portfolio_value * buy_hold_all_sp_return_train
+buy_hold_all_tbill_value_train = init_total_portfolio_value * buy_hold_all_tbill_return_train
 
 buy_hold_value_train = init_total_portfolio_value * buy_hold_return_train
 buy_hold_value_test = init_total_portfolio_value * buy_hold_return_test
@@ -67,17 +140,21 @@ print("train-test split index: ", train_split_idx)
 print("\n")
 print("train: mean final portfolio value: ", np.mean(val_train))
 print("train: buy-n-hold final portfolio value: ", buy_hold_value_train)
+print("train: buy-n-hold final portfolio value (all S&P500):", buy_hold_all_sp_value_train)
+print("train: buy-n-hold final portfolio value (all T-bill):", buy_hold_all_tbill_value_train)
 print("\n")
 print("test: final portfolio value: ", val_test[0])
 print("test: buy-n-hold final portfolio value: ", buy_hold_value_ts[-1])
 print("test: buy-n-hold final portfolio value: ", buy_hold_value_test)
 print("\n")
-print(state_test_daily[0:10])
+print(state_test_daily[0:20])
+print(state_test_daily[400:460])
 
 fig1, ax1 = plt.subplots()
 ax1.plot(val_train)
-ax1.axhline(np.mean(val_train))
-ax1.axhline(buy_hold_value_train, color='r')
+ax1.axhline(np.mean(val_train), label="dql train average")
+ax1.axhline(buy_hold_value_train, color='r', label="BnH mix (init S&P500 frac: " + str(init_sp_share) + ")" )
+ax1.legend(loc='upper left')
 
 # print(cum_return_test)
 fig2, ax2 = plt.subplots()
@@ -87,4 +164,8 @@ ax2.plot(buy_hold_value_ts, label="BnH mix (init S&P500 frac: " + str(init_sp_sh
 ax2.plot(val_test_daily, color='k', label="dql (init S&P500 frac: " + str(init_sp_share) + ")")
 ax2.legend(loc='upper left')
 
+fig3, ax3 = plt.subplots()
+ax3.plot(np.stack(state_test_daily, axis=0)[:, 1], 'o')
+
 plt.show()
+

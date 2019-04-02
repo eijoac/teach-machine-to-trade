@@ -78,6 +78,7 @@ if __name__ == '__main__':
 
         # jay: no exploration in test mode
         agent.epsilon = -1
+        # agent.epsilon = 0.3
 
         # run 1 episode in test mode
         episode = 1
@@ -85,6 +86,7 @@ if __name__ == '__main__':
     for e in range(episode):
         state = env._reset()
         state = scaler.transform([state])
+        agent.step = 1
         for time in range(env.n_step - env.lag):
             action = agent.act(state)
             next_state, reward, done, info = env._step(action)
@@ -106,7 +108,7 @@ if __name__ == '__main__':
                 break
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
-        if args.mode == 'train' and (e + 1) % 10 == 0:  # checkpoint weights
+        if args.mode == 'train' and (e + 1) % 1000 == 0:  # checkpoint weights
             agent.save('weights/{}-dqn.h5'.format(timestamp))
 
     # save portfolio value history to disk

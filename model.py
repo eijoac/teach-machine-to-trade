@@ -7,7 +7,7 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
-def mlp(n_obs, n_action, n_hidden_layer=2, n_neuron_per_layer=32,
+def mlp(n_obs, n_action, n_hidden_layer=3, n_neuron_per_layer=100,
         activation='relu', loss='mse'):
     """ A multi-layer perceptron """
     model = Sequential()
@@ -15,6 +15,6 @@ def mlp(n_obs, n_action, n_hidden_layer=2, n_neuron_per_layer=32,
     for _ in range(n_hidden_layer):
         model.add(Dense(n_neuron_per_layer, activation=activation))
     model.add(Dense(n_action, activation='linear'))
-    model.compile(loss=loss, optimizer=Adam())
+    model.compile(loss=loss, optimizer=Adam(lr=0.0001))
     print(model.summary())
     return model

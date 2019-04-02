@@ -23,7 +23,7 @@ class TradingEnv(gym.Env):
         # self.stock_price_history = np.around(train_data) # round up to integer to reduce state space
         self.sp_rf_ts = train_data
 
-        self.lag = 7
+        self.lag = 30
 
         # jay: keep the self.n_stock for now
         self.n_stock, self.n_step = self.sp_rf_ts.shape
@@ -103,6 +103,8 @@ class TradingEnv(gym.Env):
         self._trade(action)
         cur_val = self._get_val()
         reward = math.log(cur_val) - math.log(prev_val)
+        # reward = cur_val - prev_val
+        # reward = math.copysign(1, cur_val - prev_val)
         done = self.cur_step == self.n_step - 1
         info = {'cur_val': cur_val}
         return self._get_obs(), reward, done, info

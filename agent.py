@@ -13,9 +13,12 @@ class DQNAgent(object):
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
+        self.epsilon_min = 0.1
         self.epsilon_decay = 0.995
         self.model = mlp(state_size, action_size)
+        self.model_hat = self.model
+        self.update_freq = 50
+        self.step = 1
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -36,9 +39,11 @@ class DQNAgent(object):
         next_states = np.array([tup[3][0] for tup in minibatch])
         done = np.array([tup[4] for tup in minibatch])
 
-        # Q(s', a)
+        # r + gamma * max{Q_hat(s', a)}
+        # target = rewards + self.gamma * \
+        #     np.amax(self.model.predict(next_states), axis=1)
         target = rewards + self.gamma * \
-            np.amax(self.model.predict(next_states), axis=1)
+            np.amax(self.model_hat.predict(next_states), axis=1)
         # end state target is reward itself (no lookahead)
         target[done] = rewards[done]
 
@@ -48,6 +53,11 @@ class DQNAgent(object):
         target_f[range(batch_size), actions] = target
 
         self.model.fit(states, target_f, epochs=1, verbose=0)
+
+        # update Q_hat
+        self.step += 1
+        if self.step % self.update_freq == 0:
+            self.model_hat = self.model
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
