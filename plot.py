@@ -165,7 +165,8 @@ ax2.plot(val_test_daily, color='k', label="dql (init S&P500 frac: " + str(init_s
 ax2.legend(loc='upper left')
 
 fig3, ax3 = plt.subplots()
-ax3.plot(np.stack(state_test_daily, axis=0)[:, 1], 'o')
+ax3.plot(np.stack(state_test_daily, axis=0)[:, 1], marker='o', markersize=1, linestyle='none')
+plt.title("S&P500 holding fraction")
 
 plt.show()
 
