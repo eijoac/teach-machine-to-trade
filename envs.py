@@ -31,7 +31,7 @@ class TradingEnv(gym.Env):
         
         # instance attributes
         # self.init_invest = init_invest
-        self.init_total_portfolio_value = 10000
+        self.init_portfolio_value = 10000
         self.init_sp_share = init_sp_share
         self.cur_step = None
         self.total_portfolio_value = None
@@ -83,7 +83,7 @@ class TradingEnv(gym.Env):
         # self.stock_owned = [0] * self.n_stock
         # self.stock_price = self.stock_price_history[:, self.cur_step]
         # self.cash_in_hand = self.init_invest
-        self.total_portfolio_value = self.init_total_portfolio_value
+        self.total_portfolio_value = self.init_portfolio_value
         self.sp_share = self.init_sp_share
         self.sp = self.sp_rf_ts[0, self.cur_step]
         self.rf = self.sp_rf_ts[1, self.cur_step]
