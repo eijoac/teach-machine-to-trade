@@ -89,6 +89,16 @@ if __name__ == '__main__':
         agent.step = 1
         for time in range(env.n_step - env.lag):
             action = agent.act(state)
+
+            # action augmentation
+            if args.mode == 'train':
+                aug_actions = list(range(action_size))
+                aug_actions.remove(action)
+                for aug_action in aug_actions:
+                    next_state, reward, done = env.action_aug(aug_action)
+                    next_state = scaler.transform([next_state])
+                    agent.remember(state, aug_action, reward, next_state, done)
+
             next_state, reward, done, info = env._step(action)
             next_state = scaler.transform([next_state])
             if args.mode == 'train':
@@ -108,7 +118,7 @@ if __name__ == '__main__':
                 break
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
-        if args.mode == 'train' and (e + 1) % 1000 == 0:  # checkpoint weights
+        if args.mode == 'train' and (e + 1) % 100 == 0:  # checkpoint weights
             agent.save('weights/{}-dqn.h5'.format(timestamp))
 
     # save portfolio value history to disk

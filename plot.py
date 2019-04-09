@@ -119,7 +119,32 @@ init_portfolio_value = 10000
 
 # test3: trick 2 implemented; update_freq = 50; episode = 5000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
 # total value normalization * 5; replay memory = 500;
-timestamp = "201904031745"
+# timestamp = "201904031745"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_freq = 50; episode = 500; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5; action augmentation implemented;
+# timestamp = "201904051217"
+# init_sp_share = 0
+# lag = 30
+
+
+# test2: trick 2 implemented; update_freq = 50; episode = 10000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5;
+# timestamp = "201904051618"
+# init_sp_share = 0
+# lag = 30
+
+# test3: trick 2 implemented; update_freq = 50; episode = 10000; min_epsilon = 0.01; reward log; learning rate = 0.00005; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5;
+# timestamp = "201904051617"
+# init_sp_share = 0
+# lag = 30
+
+# trick 2 implemented; update_freq = 50; episode = 10000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5; action augmentation implemented;
+timestamp = "201904051619"
 init_sp_share = 0
 lag = 30
 
