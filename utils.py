@@ -1,4 +1,4 @@
-"""utility function collections"""
+"""utility functions"""
 
 import os
 

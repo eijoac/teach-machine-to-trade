@@ -84,7 +84,7 @@ if __name__ == '__main__':
         episode = 1
 
     for e in range(episode):
-        state = env._reset()
+        state = env.reset()
         state = scaler.transform([state])
         agent.step = 1
         for time in range(env.n_step - env.lag):
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                     next_state = scaler.transform([next_state])
                     agent.remember(state, aug_action, reward, next_state, done)
 
-            next_state, reward, done, info = env._step(action)
+            next_state, reward, done, info = env.step(action)
             next_state = scaler.transform([next_state])
             if args.mode == 'train':
                 agent.remember(state, action, reward, next_state, done)

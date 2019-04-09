@@ -1,9 +1,9 @@
+"""Trading environment"""
+import math
+
 import gym
 from gym import spaces
 from gym.utils import seeding
-# import numpy as np
-# import itertools
-import math
 
 
 class TradingEnv(gym.Env):
@@ -34,7 +34,7 @@ class TradingEnv(gym.Env):
         self.init_portfolio_value = 10000
         self.init_sp_share = init_sp_share
         self.cur_step = None
-        self.total_portfolio_value = None
+        self.portfolio_value = None
         # self.stock_owned = None
         # self.stock_price = None
         # self.cash_in_hand = None
@@ -72,18 +72,18 @@ class TradingEnv(gym.Env):
 
         # seed and start
         self._seed()
-        self._reset()
+        self.reset()
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _reset(self):
+    def reset(self):
         self.cur_step = self.lag
         # self.stock_owned = [0] * self.n_stock
         # self.stock_price = self.stock_price_history[:, self.cur_step]
         # self.cash_in_hand = self.init_invest
-        self.total_portfolio_value = self.init_portfolio_value
+        self.portfolio_value = self.init_portfolio_value
         self.sp_share = self.init_sp_share
         self.sp = self.sp_rf_ts[0, self.cur_step]
         self.rf = self.sp_rf_ts[1, self.cur_step]
@@ -91,7 +91,7 @@ class TradingEnv(gym.Env):
         self.rf_lag = self.sp_rf_ts[1, self.cur_step - self.lag : self.cur_step]
         return self._get_obs()
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action)
         prev_val = self._get_val()
         self.cur_step += 1
@@ -114,7 +114,7 @@ class TradingEnv(gym.Env):
         # obs.extend(self.stock_owned)
         # obs.extend(list(self.stock_price))
         # obs.append(self.cash_in_hand)
-        obs.append(self.total_portfolio_value)
+        obs.append(self.portfolio_value)
         obs.append(self.sp_share)
         obs.append(self.sp)
         obs.extend(self.sp_lag)
@@ -124,7 +124,7 @@ class TradingEnv(gym.Env):
 
     def _get_val(self):
         # return np.sum(self.stock_owned * self.stock_price) + self.cash_in_hand
-        return self.total_portfolio_value
+        return self.portfolio_value
 
     def _trade(self, action):
         # update S&P share based on action (at the end of a day)
@@ -139,7 +139,7 @@ class TradingEnv(gym.Env):
         sp_share_change_factor = sp_share_tp * (1 + self.sp)
         total_change_factor = sp_share_change_factor + \
             (1 - sp_share_tp) * (1 + self.rf)
-        self.total_portfolio_value = self.total_portfolio_value * total_change_factor
+        self.portfolio_value = self.portfolio_value * total_change_factor
 
         # update S&P share based on next day's return
         self.sp_share = sp_share_change_factor / total_change_factor
@@ -192,13 +192,13 @@ class TradingEnv(gym.Env):
         sp_share_change_factor = sp_share_tp * (1 + sp)
         total_change_factor = sp_share_change_factor + \
             (1 - sp_share_tp) * (1 + rf)
-        total_portfolio_value = self.total_portfolio_value * total_change_factor
+        portfolio_value = self.portfolio_value * total_change_factor
 
         # update S&P share based on next day's return
         sp_share = sp_share_change_factor / total_change_factor
 
         # keep it this way in case not using log reward
-        cur_val = total_portfolio_value
+        cur_val = portfolio_value
         # reward = math.log(total_change_factor)
         reward = math.log(cur_val) - math.log(prev_val)
         # reward = cur_val - prev_val
@@ -207,7 +207,7 @@ class TradingEnv(gym.Env):
         done = cur_step == self.n_step - 1
 
         next_state = []
-        next_state.append(total_portfolio_value)
+        next_state.append(portfolio_value)
         next_state.append(sp_share)
         next_state.append(sp)
         next_state.extend(sp_lag)
