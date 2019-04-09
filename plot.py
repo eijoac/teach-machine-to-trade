@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-from utils import get_data
+from utils import get_data, get_data_lags
 
 
 init_portfolio_value = 10000
@@ -144,11 +144,18 @@ init_portfolio_value = 10000
 
 # trick 2 implemented; update_freq = 50; episode = 10000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
 # total value normalization * 5; action augmentation implemented;
-timestamp = "201904051619"
-init_sp_share = 0
-lag = 30
+# timestamp = "201904051619"
+# init_sp_share = 0
+# lag = 30
 
-data = get_data()
+# timestamp = "201904091512"
+# init_sp_share = 0
+
+timestamp = "201904091651"
+init_sp_share = 0
+
+# data = get_data()
+data = get_data_lags()
 
 # train fraction
 train_fraction = 0.6
@@ -157,11 +164,11 @@ train_split_idx = int(data.shape[1] * train_fraction)
 train_data = data[:, :train_split_idx]
 test_data = data[:, train_split_idx:]
 
-buy_hold_return_train = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + train_data[:, (1 + lag):], axis=1))
-buy_hold_return_test = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + test_data[:, (1 + lag):], axis=1))
+buy_hold_return_train = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + train_data[0:2, 1:], axis=1))
+buy_hold_return_test = np.sum([init_sp_share, 1 - init_sp_share] * np.product(1 + test_data[0:2, 1:], axis=1))
 
-buy_hold_all_sp_return_train = np.sum([1, 0] * np.product(1 + train_data[:, (1 + lag):], axis=1))
-buy_hold_all_tbill_return_train = np.sum([0, 1] * np.product(1 + train_data[:, (1 + lag):], axis=1))
+buy_hold_all_sp_return_train = np.sum([1, 0] * np.product(1 + train_data[0:2, 1:], axis=1))
+buy_hold_all_tbill_return_train = np.sum([0, 1] * np.product(1 + test_data[0:2, 1:], axis=1))
 
 buy_hold_all_sp_value_train = init_portfolio_value * buy_hold_all_sp_return_train
 buy_hold_all_tbill_value_train = init_portfolio_value * buy_hold_all_tbill_return_train
@@ -169,7 +176,7 @@ buy_hold_all_tbill_value_train = init_portfolio_value * buy_hold_all_tbill_retur
 buy_hold_value_train = init_portfolio_value * buy_hold_return_train
 buy_hold_value_test = init_portfolio_value * buy_hold_return_test
 
-cum_return_test_ts = np.cumprod(1 + test_data[:, (1 + lag):], axis=1)
+cum_return_test_ts = np.cumprod(1 + test_data[0:2, 1:], axis=1)
 buy_hold_value_ts_all_sp = init_portfolio_value * cum_return_test_ts[0, ]
 buy_hold_value_ts_all_tbill = init_portfolio_value * cum_return_test_ts[1, ]
 buy_hold_value_ts = init_portfolio_value * (init_sp_share * cum_return_test_ts[0, ] + (1 - init_sp_share) * cum_return_test_ts[1, ])
@@ -219,4 +226,3 @@ ax3.plot(np.stack(state_test_daily, axis=0)[:, 1], marker='o', markersize=1, lin
 plt.title("S&P500 holding fraction")
 
 plt.show()
-

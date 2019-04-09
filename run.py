@@ -6,7 +6,7 @@ import re
 
 from envs import TradingEnv
 from agent import DQNAgent
-from utils import get_data, get_scaler, maybe_make_dir
+from utils import get_data, get_data_lags, get_scaler, maybe_make_dir
 
 
 if __name__ == '__main__':
@@ -28,41 +28,41 @@ if __name__ == '__main__':
 
     timestamp = time.strftime('%Y%m%d%H%M')
 
-    # jay: no round up
-    # data = np.around(get_data())
-    data = get_data()
+    # get data
+    # data = get_data()
+    data = get_data_lags()
 
-    # train fraction
+    # train & test split
     train_fraction = 0.6
 
     train_split_idx = int(data.shape[1] * train_fraction)
     train_data = data[:, :train_split_idx]
     test_data = data[:, train_split_idx:]
 
+    # print buy & hold returns for training and testing
+    # train_data[0:1, 1:]: 0:1 to get S&P500 and T-bill returns; 1: to remove first column as
+    # we start from the end of the first day
     buy_hold_return_train = np.sum(
-        [args.initial_sp_share, 1 - args.initial_sp_share] * np.product(1 + train_data[:, 1:], axis=1))
+        [args.initial_sp_share, 1 - args.initial_sp_share] * np.product(1 + train_data[0:1, 1:], axis=1))
     buy_hold_return_test = np.sum(
-        [args.initial_sp_share, 1 - args.initial_sp_share] * np.product(1 + test_data[:, 1:], axis=1))
+        [args.initial_sp_share, 1 - args.initial_sp_share] * np.product(1 + test_data[0:1, 1:], axis=1))
 
     print("buy hold train: ", buy_hold_return_train)
     print("buy hold test: ", buy_hold_return_test)
 
+    # trading environment setup
     env = TradingEnv(train_data, args.initial_sp_share)
 
-    # jay: add for debug
-    # print(env.observation_space.shape)
+    # state_size is number of rows in data + 2 (portfolio value & sp share)
+    state_size = data.shape[0] + 2
 
-    # the only place observation_space is used
-    # state_size = env.observation_space.shape[0]
-    # hard code for now
-    state_size = 4 + env.lag * 2
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size)
     scaler = get_scaler(env)
 
     portfolio_value = []
 
-    # for record test mode daily portfolio value for plotting
+    # for recording test mode daily portfolio value for plotting
     test_portfolio_value_daily = []
     test_state_daily = []
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         state = env.reset()
         state = scaler.transform([state])
         agent.step = 1
-        for time in range(env.n_step - env.lag):
+        for time in range(env.n_step):
             action = agent.act(state)
 
             # action augmentation
