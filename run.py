@@ -6,7 +6,7 @@ import re
 
 from envs import TradingEnv
 from agent import DQNAgent
-from utils import get_data, get_data_lags, get_scaler, maybe_make_dir
+from utils import get_data, get_scaler, maybe_make_dir
 
 
 if __name__ == '__main__':
@@ -28,9 +28,11 @@ if __name__ == '__main__':
 
     timestamp = time.strftime('%Y%m%d%H%M')
 
+    lag = 30
+
     # get data
     # data = get_data()
-    data = get_data_lags()
+    data = get_data(lag=lag, other_indicator=False)
 
     # train & test split
     train_fraction = 0.6

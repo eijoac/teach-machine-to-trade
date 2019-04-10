@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-from utils import get_data, get_data_lags
+from utils import get_data
 
 
 init_portfolio_value = 10000
@@ -151,11 +151,17 @@ init_portfolio_value = 10000
 # timestamp = "201904091512"
 # init_sp_share = 0
 
-timestamp = "201904091651"
+# timestamp = "201904091651"
+# init_sp_share = 0
+
+# trick 2 implemented; update_freq = 50; episode = 5000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5; action augmentation implemented;
+timestamp = "201904091736"
 init_sp_share = 0
 
+
 # data = get_data()
-data = get_data_lags()
+data = get_data(lag=30, other_indicator=False)
 
 # train fraction
 train_fraction = 0.6

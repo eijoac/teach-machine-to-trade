@@ -6,49 +6,68 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+def get_data(lag=0, other_indicator=False):
+    """ Reads and processes S&P500 and T-bill data. Returns an array with time series rows. """
 
-def get_data(col='close'):
-    """ Reads and processes S&P500 and T-bill data. Returns a 2 x T-1 array. """
+    # Get the investable asset file; timestamp need to be the first column
+    asset = pd.read_csv('data/InvestableAsset.csv')
 
-    # get raw data: S&P500 daily price index, and T-Bill daily yield
-    sp500 = pd.read_csv('data/daily_SPXTR.csv', usecols=[col])
-    rf_daily_return = pd.read_csv('data/daily_RF.csv', usecols=[col])
-
-    # get S&P500 daily returns
-    sp_daily_return = (sp500 - sp500.shift()) / sp500
-
-    # remove the first row, and return a 2 by T-1 numpy array
-    return np.array([sp_daily_return[col].values[1:],
-                     rf_daily_return[col].values[1:]])
-
-
-def get_data_lags(col='close'):
-    """ Reads and processes S&P500 and T-bill data. Returns a 2x(lag+1) x T-1-lag array. """
-
-    # get raw data: S&P500 daily price index, and T-Bill daily yield
-    sp500 = pd.read_csv('data/daily_SPXTR.csv', usecols=[col])
-    rf_daily_return = pd.read_csv('data/daily_RF.csv', usecols=[col])
+    # Get the other indicator file; timestamp need to be the first column
+    if other_indicator:
+        other = pd.read_csv('data/other.csv')
 
     # get S&P500 daily returns
-    sp_daily_return = (sp500 - sp500.shift()) / sp500
+    asset['SP500'] = pd.DataFrame(
+        (asset['SP500'] - asset['SP500'].shift()) / asset['SP500'])
 
-    # add lags
-    lag = 30
-    lags = range(1, lag+1)
-    sp_lags = sp_daily_return.assign(
-        **{"{}_{}".format(col, t): sp_daily_return[col].shift(t) for t in lags})
-    rf_lags = rf_daily_return.assign(
-        **{"{}_{}".format(col, t): rf_daily_return[col].shift(t) for t in lags})
+    # remove the first NaN row
+    asset = asset.iloc[1:, :]
 
-    # stack; put S&P500 daily returns and T-Bill daily returns first, and their lags next
-    data = np.hstack((sp_lags.loc[:, [col]].values,
-                      rf_lags.loc[:, [col]].values,
-                      sp_lags.loc[:, sp_lags.columns != col].values,
-                      rf_lags.loc[:, rf_lags.columns != col].values))
+    # check if we want lag for investable asset
+    # https://stackoverflow.com/questions/48818213/make-multiple-shifted-lagged-columns-in-pandas
+    # if lag != 0:
+    #     name = asset.columns.values
+    #     for i in range(1, len(name)):
+    #         lags = range(1, lag+1)
+    #         asset = asset.assign(
+    #             **{"{}_{}".format(name[i], t): asset[name[i]].shift(t) for t in lags})
 
-    # transpose, remove the first lag+1 column, and return a 2x(lag+1) x T-1-lag;
-    # the first two rows are S&P500 and T-Bill daily returns
-    return np.transpose(data)[:, lag+1:]
+    #     # merge it with the other indicator based on date
+    #     asset = pd.merge(asset, other, on='timestamp', how='inner')
+
+    #     # in case asset.assign() above doesn't add new columns to the right of the original columns
+    #     # stack; put investable asset returns first, and their lags and other indicator next
+    #     data = np.hstack((asset.loc[:, name[1:len(name)]].values,
+    #                       asset.drop(columns=name).values))
+    # else:
+    #     # if no lags required, simply join the investable asset with other indicators
+    #     asset = pd.merge(asset, other, on='timestamp', how='inner')
+    #     name = asset.columns.values
+    #     data = asset.loc[:, name[1:len(name)]].values
+
+    # check if we want lag for investable asset
+    # https://stackoverflow.com/questions/48818213/make-multiple-shifted-lagged-columns-in-pandas
+    if lag != 0:
+        name = asset.columns.values
+        for i in range(1, len(name)):
+            lags = range(1, lag+1)
+            asset = asset.assign(
+                **{"{}_{}".format(name[i], t): asset[name[i]].shift(t) for t in lags})
+
+        # remove NaN rows
+        asset = asset.iloc[lag:, :]
+
+    # check if we want other indicators
+    if other_indicator:
+        # merge it with the other indicator based on timestamp
+        asset = pd.merge(asset, other, on='timestamp', how='inner')
+
+    # remove timestamp column; convert dataframe to array
+    data = asset.loc[:, asset.columns != 'timestamp'].values
+
+    # transpose and return an array with time series rows;
+    # the rows at the top are the investable asset daily returns
+    return np.transpose(data)
 
 
 def get_scaler(env):
