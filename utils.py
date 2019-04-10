@@ -9,19 +9,12 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 def get_data(lag=0, other_indicator=False):
     """ Reads and processes S&P500 and T-bill data. Returns an array with time series rows. """
 
-    # Get the investable asset file; timestamp need to be the first column
+    # Get the investable asset file
     asset = pd.read_csv('data/InvestableAsset.csv')
-
-    # Get the other indicator file; timestamp need to be the first column
-    if other_indicator:
-        other = pd.read_csv('data/other.csv')
 
     # get S&P500 daily returns
     asset['SP500'] = pd.DataFrame(
         (asset['SP500'] - asset['SP500'].shift()) / asset['SP500'])
-
-    # remove the first NaN row
-    asset = asset.iloc[1:, :]
 
     # check if we want lag for investable asset
     # https://stackoverflow.com/questions/48818213/make-multiple-shifted-lagged-columns-in-pandas
@@ -54,12 +47,13 @@ def get_data(lag=0, other_indicator=False):
             asset = asset.assign(
                 **{"{}_{}".format(name[i], t): asset[name[i]].shift(t) for t in lags})
 
-        # remove NaN rows
-        asset = asset.iloc[lag:, :]
+    # remove NaN row(s) coming from the daily return and the potential lag calculatioin
+    asset = asset.iloc[lag+1:, :]
 
     # check if we want other indicators
     if other_indicator:
-        # merge it with the other indicator based on timestamp
+        other = pd.read_csv('data/other.csv')
+        # merge asset with the other indicator based on timestamp
         asset = pd.merge(asset, other, on='timestamp', how='inner')
 
     # remove timestamp column; convert dataframe to array
