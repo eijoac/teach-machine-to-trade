@@ -1,3 +1,4 @@
+"""NN Model"""
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
@@ -8,13 +9,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
 def mlp(n_obs, n_action, n_hidden_layer=3, n_neuron_per_layer=100,
-        activation='relu', loss='mse'):
+        activation='relu', loss='mse', lr=0.0001):
     """ A multi-layer perceptron """
     model = Sequential()
     model.add(Dense(n_neuron_per_layer, input_dim=n_obs, activation=activation))
     for _ in range(n_hidden_layer):
         model.add(Dense(n_neuron_per_layer, activation=activation))
     model.add(Dense(n_action, activation='linear'))
-    model.compile(loss=loss, optimizer=Adam(lr=0.0001))
+    model.compile(loss=loss, optimizer=Adam(lr=lr))
     print(model.summary())
     return model
