@@ -35,7 +35,8 @@ class TradingEnv(gym.Env):
         self.others = None
 
         # action space
-        self.action_space = spaces.Discrete(3)
+        self.action_map = [-0.1, 0, 0.1]
+        self.action_space = spaces.Discrete(len(self.action_map))
 
         # seed and start
         self._seed()
@@ -91,12 +92,14 @@ class TradingEnv(gym.Env):
 
     def _trade(self, action):
         # update S&P share based on action (at the end of a day)
-        if action == 0:
-            sp_share_tp = (self.sp_share - 0.1) if self.sp_share > 0.1 else 0
-        elif action == 2:
-            sp_share_tp = (self.sp_share + 0.1) if self.sp_share < 0.9 else 1
-        else:
-            sp_share_tp = self.sp_share
+        # if action == 0:
+        #     sp_share_tp = (self.sp_share - 0.1) if self.sp_share > 0.1 else 0
+        # elif action == 2:
+        #     sp_share_tp = (self.sp_share + 0.1) if self.sp_share < 0.9 else 1
+        # else:
+        #     sp_share_tp = self.sp_share
+        act = self.action_map[action]
+        sp_share_tp = max(0, min(1, self.sp_share + act))
 
         # update total portfolio value based on next day's return
         sp_share_change_factor = sp_share_tp * (1 + self.sp)
@@ -107,20 +110,24 @@ class TradingEnv(gym.Env):
         # update S&P share based on next day's return
         self.sp_share = sp_share_change_factor / total_change_factor
 
+    # leave it as standalone as opposed to combine it with step() and _trade() so it can
+    # be disabled easily
     def action_aug(self, action):
-        """action augmentation; not the most efficient implementation"""
+        """action augmentation"""
         prev_val = self._get_val()
         cur_step = self.cur_step + 1
         sp = self.data[0, cur_step]
         rf = self.data[1, cur_step]
         others = self.data[2:, cur_step]
 
-        if action == 0:
-            sp_share_tp = (self.sp_share - 0.1) if self.sp_share > 0.1 else 0
-        elif action == 2:
-            sp_share_tp = (self.sp_share + 0.1) if self.sp_share < 0.9 else 1
-        else:
-            sp_share_tp = self.sp_share
+        # if action == 0:
+        #     sp_share_tp = (self.sp_share - 0.1) if self.sp_share > 0.1 else 0
+        # elif action == 2:
+        #     sp_share_tp = (self.sp_share + 0.1) if self.sp_share < 0.9 else 1
+        # else:
+        #     sp_share_tp = self.sp_share
+        act = self.action_map[action]
+        sp_share_tp = max(0, min(1, self.sp_share + act))
 
         # update total portfolio value based on next day's return
         sp_share_change_factor = sp_share_tp * (1 + sp)
@@ -148,3 +155,4 @@ class TradingEnv(gym.Env):
         next_state.extend(others)
 
         return next_state, reward, done
+
