@@ -35,7 +35,7 @@ class TradingEnv(gym.Env):
         self.others = None
 
         # action space
-        self.action_map = [-0.1, 0, 0.1]
+        self.action_map = [-0.2, -0.1, 0, 0.1, 0.2]
         self.action_space = spaces.Discrete(len(self.action_map))
 
         # seed and start
@@ -111,7 +111,7 @@ class TradingEnv(gym.Env):
         self.sp_share = sp_share_change_factor / total_change_factor
 
     # leave it as standalone as opposed to combine it with step() and _trade() so it can
-    # be disabled easily
+    # be disabled easily; can be vectorized, but leave it for now too.
     def action_aug(self, action):
         """action augmentation"""
         prev_val = self._get_val()
@@ -155,4 +155,3 @@ class TradingEnv(gym.Env):
         next_state.extend(others)
 
         return next_state, reward, done
-

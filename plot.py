@@ -159,12 +159,22 @@ init_portfolio_value = 10000
 
 # trick 2 implemented; update_freq = 50; episode = 5000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
 # total value normalization * 5; action augmentation implemented;
-timestamp = "201904091736"
-init_sp_share = 0
+# timestamp = "201904091736"
+# init_sp_share = 0
 
+# trick 2 implemented; update_freq = 50; episode = 5000; min_epsilon = 0.01; reward log; learning rate = 0.0001; Hidden NN 100 nodes & 3 layers;
+# total value normalization * 5; action augmentation implemented; 5 actions; no other indicators
+# timestamp = "201904121154"
+# init_sp_share = 0
+
+timestamp = "201904121522"
+episode_stamp = "500"
+init_sp_share = 0
+lag = 30
+other_indicator = False
 
 # data = get_data()
-data = get_data(lag=30, other_indicator=False)
+data = get_data(lag=lag, other_indicator=other_indicator)
 
 # train fraction
 train_fraction = 0.6
@@ -210,16 +220,16 @@ buy_hold_value_ts = init_portfolio_value * \
     (init_sp_share * cum_return_test_ts[0, ] +
      (1 - init_sp_share) * cum_return_test_ts[1, ])
 
-with open("./portfolio_val/" + timestamp + "-train.p", 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-" + episode_stamp + "-train.p", 'rb') as f:
     val_train = pickle.load(f)
 
-with open("./portfolio_val/" + timestamp + "-test.p", 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-" + episode_stamp + "-test.p", 'rb') as f:
     val_test = pickle.load(f)
 
-with open("./portfolio_val/" + timestamp + "-test-value-daily.p", 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-" + episode_stamp + "-test-value-daily.p", 'rb') as f:
     val_test_daily = pickle.load(f)
 
-with open("./portfolio_val/" + timestamp + "-test-state-daily.p", 'rb') as f:
+with open("./portfolio_val/" + timestamp + "-" + episode_stamp + "-test-state-daily.p", 'rb') as f:
     state_test_daily = pickle.load(f)
 
 print("initial S&P500 share:", init_sp_share)
@@ -239,6 +249,7 @@ print("train: buy-n-hold final portfolio value (all T-bill):",
       buy_hold_all_tbill_value_train)
 print("\n")
 print("test: final portfolio value: ", val_test[0])
+print("test: final portfolio value: ", val_test_daily[-1])
 print("test: buy-n-hold final portfolio value: ", buy_hold_value_test)
 print("test: buy-n-hold final portfolio value (all S&P500):",
       buy_hold_all_sp_value_test)

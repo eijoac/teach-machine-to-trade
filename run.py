@@ -98,6 +98,7 @@ if __name__ == '__main__':
         agent.load(args.weights)
         # when test, the timestamp is same as time when weights was trained
         timestamp = re.findall(r'\d{12}', args.weights)[0]
+        episode_stamp = re.findall(r'(?<=-)\d+', args.weights)[0]
 
         # jay: no exploration in test mode
         agent.epsilon = -1
@@ -122,6 +123,7 @@ if __name__ == '__main__':
                     next_state = scaler.transform([next_state])
                     agent.remember(state, aug_action, reward, next_state, done)
 
+            # taking optimum action
             next_state, reward, done, info = env.step(action)
             next_state = scaler.transform([next_state])
 
@@ -137,7 +139,7 @@ if __name__ == '__main__':
 
             if done:
                 print("episode: {}/{}, episode end value: {}".format(
-                    e + 1, args.episode, info['cur_val']))
+                    e+1, episode, info['cur_val']))
                 # append episode end portfolio value
                 portfolio_value.append(info['cur_val'])
                 break
@@ -145,25 +147,33 @@ if __name__ == '__main__':
             if args.mode == 'train' and len(agent.memory) > args.batch_size:
                 agent.replay(args.batch_size)
 
-        if args.mode == 'train' and (e + 1) % 100 == 0:  # checkpoint weights
-            agent.save('weights/{}-dqn.h5'.format(timestamp))
+        if args.mode == 'train' and (e + 1) % 500 == 0:  # checkpoint weights
+            agent.save('weights/{}-{}-dqn.h5'.format(timestamp, e+1))
 
-    # save final portfolio value history to disk
-    with open('portfolio_val/{}-{}.p'.format(timestamp, args.mode), 'wb') as fp:
-        pickle.dump(portfolio_value, fp)
+            # save final portfolio value training history to disk
+            with open('portfolio_val/{}-{}-{}.p'.format(timestamp, e+1, args.mode), 'wb') as fp:
+                pickle.dump(portfolio_value, fp)
+
+    # leave it here for now in case we want to run more than one episodes in test later
+    # save final portfolio value testing history to disk
+    if args.mode == 'test':
+        with open('portfolio_val/{}-{}-{}.p'.format(timestamp, episode_stamp, args.mode), 'wb') as fp:
+            pickle.dump(portfolio_value, fp)
 
     # save test daily value and state
     if args.mode == 'test':
-        with open('portfolio_val/{}-{}-value-daily.p'.format(timestamp, args.mode), 'wb') as fp:
+        with open('portfolio_val/{}-{}-{}-value-daily.p'.format(timestamp, episode_stamp, args.mode), 'wb') as fp:
             pickle.dump(test_portfolio_value_daily, fp)
-        with open('portfolio_val/{}-{}-state-daily.p'.format(timestamp, args.mode), 'wb') as fp:
+        with open('portfolio_val/{}-{}-{}-state-daily.p'.format(timestamp, episode_stamp, args.mode), 'wb') as fp:
             pickle.dump(test_state_daily, fp)
 
     # save training parameters
     if args.mode == "train":
         with open('weights/{}-parameters.txt'.format(timestamp), 'w') as ft:
-            print('initial investment: {}'.format(env.init_portfolio_value), file=ft)
-            print('initial S&P500 fraction: {}\n'.format(env.init_sp_share), file=ft)
+            print('initial investment: {}'.format(
+                env.init_portfolio_value), file=ft)
+            print('initial S&P500 fraction: {}\n'.format(
+                env.init_sp_share), file=ft)
             print('number of state variables: {}'.format(state_size), file=ft)
             print('number of lags: {}'.format(lag), file=ft)
             print('other indicators: {}'.format(other_indicator), file=ft)
@@ -172,11 +182,16 @@ if __name__ == '__main__':
             print('agent: gamma: {}'.format(agent.gamma), file=ft)
             # hard code this one for now
             print('agent: epsilon start: {}'.format(1.0), file=ft)
-            print('agent: epsilon decay rate: {}'.format(agent.epsilon_decay), file=ft)
-            print('agent: epsilon minimum: {}'.format(agent.epsilon_min), file=ft)
-            print('agent: memory size: {}'.format(agent.memory.maxlen), file=ft)
-            print('agent: target network update frequency: {}\n'.format(agent.update_freq), file=ft)
+            print('agent: epsilon decay rate: {}'.format(
+                agent.epsilon_decay), file=ft)
+            print('agent: epsilon minimum: {}'.format(
+                agent.epsilon_min), file=ft)
+            print('agent: memory size: {}'.format(
+                agent.memory.maxlen), file=ft)
+            print('agent: target network update frequency: {}\n'.format(
+                agent.update_freq), file=ft)
             print('model summary:', file=ft)
             # https://stackoverflow.com/questions/41665799/keras-model-summary-object-to-string
             agent.model.summary(print_fn=lambda x: ft.write(x + '\n'))
-            print('\nmodel: learning rate: {:f}'.format(K.eval(agent.model.optimizer.lr)), file=ft)
+            print('\nmodel: learning rate: {:f}'.format(
+                K.eval(agent.model.optimizer.lr)), file=ft)
